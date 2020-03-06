@@ -131,7 +131,7 @@ static void gps_process_coords(void) {
 /* -------------------------------------------------------------------------- */
 /* --- MAIN FUNCTION -------------------------------------------------------- */
 
-int main()
+int main(int argc, char *argv[])
 {
     struct sigaction sigact; /* SIGQUIT&SIGINT&SIGTERM signal handling */
 
@@ -145,7 +145,8 @@ int main()
     char serial_buff[128]; /* buffer to receive GPS data */
     size_t wr_idx = 0;     /* pointer to end of chars in buffer */
     int gps_tty_dev; /* file descriptor to the serial port of the GNSS module */
-
+    const char *spi_path = NULL;
+    int opt;
     /* NMEA/UBX variables */
     enum gps_msg latest_msg; /* keep track of latest NMEA/UBX message parsed */
 
@@ -156,6 +157,24 @@ int main()
     sigaction(SIGQUIT, &sigact, NULL);
     sigaction(SIGINT, &sigact, NULL);
     sigaction(SIGTERM, &sigact, NULL);
+
+    while ((opt = getopt(argc, argv, ":s:") != -1)) {
+        switch (opt) {
+            case 's':
+                spi_path = optarg;
+                break;
+            case ':':
+                fprintf(stderr, "-s parameter requires path\n");
+                return 1;
+            default:
+                fprintf(stderr, "Usage: %s [-s <spi_dev_path>]\n", argv[0]);
+                return 1;
+            }
+    }
+
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
+    }
 
     /* Intro message and library information */
     printf("Beginning of test for loragw_gps.c\n");
@@ -184,7 +203,7 @@ int main()
     rfconf.tx_enable = true;
     lgw_rxrf_setconf(0, rfconf);
 
-    lgw_start();
+    lgw_start(spi_path);
 
     /* initialize some variables before loop */
     memset(serial_buff, 0, sizeof serial_buff);

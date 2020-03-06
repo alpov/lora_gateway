@@ -198,6 +198,7 @@ int main(int argc, char **argv)
     struct lgw_conf_board_s boardconf;
     struct lgw_conf_lbt_s lbtconf;
     struct lgw_conf_rxrf_s rfconf;
+    const char *spi_path = NULL;
 
     /* allocate memory for packet sending */
     struct lgw_pkt_tx_s txpkt; /* array containing 1 outbound packet + metadata */
@@ -213,6 +214,7 @@ int main(int argc, char **argv)
         {"lbt-rssi", required_argument, 0, 0},
         {"lbt-nbch", required_argument, 0, 0},
         {"lbt-rssi-offset", required_argument, 0, 0},
+        {"spi-path", required_argument, 0, 0},
         {0, 0, 0, 0}
     };
 
@@ -454,6 +456,9 @@ int main(int argc, char **argv)
                         usage();
                         return EXIT_FAILURE;
                     }
+                } else if( strcmp(long_options[option_index].name, "spi-path") == 0 ) {
+                    spi_path = optarg;
+                    break;
                 } else if( strcmp(long_options[option_index].name, "lbt-nbch") == 0 ) { /* <int> LBT number of channels */
                     if (lbt_enable == true) {
                         i = sscanf(optarg, "%i", &xi);
@@ -486,6 +491,9 @@ int main(int argc, char **argv)
     if (radio_type == LGW_RADIO_TYPE_NONE) {
         MSG("ERROR: radio type parameter not properly set, please use -r option to specify it.\n");
         return EXIT_FAILURE;
+    }
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
     }
 
     /* Summary of packet parameters */
@@ -546,7 +554,7 @@ int main(int argc, char **argv)
     lgw_txgain_setconf(&txgain_lut);
 
     /* Start concentrator */
-    i = lgw_start();
+    i = lgw_start(spi_path);
     if (i == LGW_HAL_SUCCESS) {
         MSG("INFO: concentrator started, packet can be sent\n");
     } else {

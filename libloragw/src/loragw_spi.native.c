@@ -61,7 +61,7 @@ Maintainer: Sylvain Miermont
 /* --- PUBLIC FUNCTIONS DEFINITION ------------------------------------------ */
 
 /* SPI initialization and configuration */
-int lgw_spi_open(void **spi_target_ptr) {
+int lgw_spi_open(void **spi_target_ptr, const char* dev_path) {
     int *spi_device = NULL;
     int dev;
     int a=0, b=0;
@@ -69,6 +69,7 @@ int lgw_spi_open(void **spi_target_ptr) {
 
     /* check input variables */
     CHECK_NULL(spi_target_ptr); /* cannot be null, must point on a void pointer (*spi_target_ptr can be null) */
+    CHECK_NULL(dev_path);
 
     /* allocate memory for the device descriptor */
     spi_device = malloc(sizeof(int));
@@ -78,9 +79,9 @@ int lgw_spi_open(void **spi_target_ptr) {
     }
 
     /* open SPI device */
-    dev = open(SPI_DEV_PATH, O_RDWR);
+    dev = open(dev_path, O_RDWR);
     if (dev < 0) {
-        DEBUG_PRINTF("ERROR: failed to open SPI device %s\n", SPI_DEV_PATH);
+        DEBUG_PRINTF("ERROR: failed to open SPI device %s\n", dev_path);
         return LGW_SPI_ERROR;
     }
 

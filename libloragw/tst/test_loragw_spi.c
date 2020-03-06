@@ -20,6 +20,7 @@ Maintainer: Sylvain Miermont
 
 #include <stdint.h>
 #include <stdio.h>
+#include <getopt.h>
 
 #include "loragw_spi.h"
 
@@ -37,22 +38,44 @@ Maintainer: Sylvain Miermont
 /* -------------------------------------------------------------------------- */
 /* --- MAIN FUNCTION -------------------------------------------------------- */
 
-int main()
+int main(int argc, char *argv[])
 {
     int i;
     void *spi_target = NULL;
+    const char *spi_path = NULL;
+    int opt;
     uint8_t data = 0;
     uint8_t dataout[BURST_TEST_SIZE];
     uint8_t datain[BURST_TEST_SIZE];
     uint8_t spi_mux_mode = LGW_SPI_MUX_MODE0;
+
+
+    while ((opt = getopt(argc, argv, ":s:") != -1)) {
+        switch (opt) {
+            case 's':
+                spi_path = optarg;
+                break;
+            case ':':
+                fprintf(stderr, "-s parameter requires path\n");
+                return 1;
+            default:
+                fprintf(stderr, "Usage: %s [-s <spi_dev_path>]\n", argv[0]);
+                return 1;
+            }
+    }
+
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
+    }
 
     for (i = 0; i < BURST_TEST_SIZE; ++i) {
         dataout[i] = 0x30 + (i % 10); /* ASCCI code for 0 -> 9 */
         datain[i] = 0x23; /* garbage data, to be overwritten by received data */
     }
 
+    printf("INFO: Using SPI device: %s\n", spi_path);
     printf("Beginning of test for loragw_spi.c\n");
-    lgw_spi_open(&spi_target);
+    lgw_spi_open(&spi_target, spi_path);
 
     /* normal R/W test */
     for (i = 0; i < TIMING_REPEAT; ++i)

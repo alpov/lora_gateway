@@ -80,6 +80,7 @@ void usage(void) {
     printf(" -o <int>   offset in dB to be applied to the SX127x RSSI [-128..127]\n");
     printf(" -r <int>   target RSSI: signal strength target used to detect if the channel is clear or not [-128..0]\n");
     printf(" -s <uint>  scan time in µs for all 8 LBT channels [128,5000]\n");
+    printf(" -p <path>  SPI device path\n");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -103,9 +104,10 @@ int main(int argc, char **argv)
     int32_t val, val2;
     int channel;
     uint32_t freq_offset;
+    const char *spi_path = NULL;
 
     /* parse command line options */
-    while ((i = getopt (argc, argv, "h:f:s:r:o:")) != -1) {
+    while ((i = getopt (argc, argv, "h:f:s:r:o:p:")) != -1) {
         switch (i) {
             case 'h':
                 usage();
@@ -152,6 +154,9 @@ int main(int argc, char **argv)
                     rssi_offset = (int8_t)xi;
                 }
                 break;
+            case 'p':
+                spi_path = optarg;
+                break;
             default:
                 MSG("ERROR: argument parsing use -h option for help\n");
                 usage();
@@ -160,7 +165,9 @@ int main(int argc, char **argv)
     }
 
     MSG("INFO: Starting LoRa Gateway v1.5 LBT test\n");
-
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
+    }
     /* configure signal handling */
     sigemptyset(&sigact.sa_mask);
     sigact.sa_flags = 0;
@@ -170,7 +177,7 @@ int main(int argc, char **argv)
     sigaction(SIGTERM, &sigact, NULL);
 
     /* Connect to concentrator */
-    i = lgw_connect(false, LGW_DEFAULT_NOTCH_FREQ);
+    i = lgw_connect(false, LGW_DEFAULT_NOTCH_FREQ, spi_path);
     if (i != LGW_REG_SUCCESS) {
         MSG("ERROR: lgw_connect() did not return SUCCESS\n");
         return EXIT_FAILURE;

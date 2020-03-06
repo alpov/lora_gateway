@@ -106,9 +106,10 @@ int main(int argc, char **argv)
     uint8_t status_var = 0;
     double xd = 0.0;
     int xi = 0;
+    const char *spi_path = NULL;
 
     /* parse command line options */
-    while ((i = getopt (argc, argv, "ha:b:t:r:k:")) != -1) {
+    while ((i = getopt (argc, argv, "ha:b:t:r:k:s:")) != -1) {
         switch (i) {
             case 'h':
                 usage();
@@ -145,11 +146,18 @@ int main(int argc, char **argv)
                 sscanf(optarg, "%i", &xi);
                 clocksource = (uint8_t)xi;
                 break;
+            case 's':
+                spi_path = optarg;
+                break;
             default:
                 printf("ERROR: argument parsing\n");
                 usage();
                 return -1;
         }
+    }
+
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
     }
 
     /* check input parameters */
@@ -302,8 +310,9 @@ int main(int argc, char **argv)
     txpkt.rf_chain = 0;
 */
 
+    printf("INFO: Using SPI device: %s\n", spi_path);
     /* connect, configure and start the LoRa concentrator */
-    i = lgw_start();
+    i = lgw_start(spi_path);
     if (i == LGW_HAL_SUCCESS) {
         printf("*** Concentrator started ***\n");
     } else {

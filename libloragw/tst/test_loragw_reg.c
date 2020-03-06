@@ -19,6 +19,7 @@ Maintainer: Sylvain Miermont
 
 #include <stdint.h>
 #include <stdio.h>
+#include <getopt.h>
 
 #include "loragw_reg.h"
 
@@ -27,17 +28,37 @@ Maintainer: Sylvain Miermont
 
 #define BURST_TEST_LENGTH    8192
 
-int main()
+int main(int argc, char *argv[])
 {
     int32_t read_value, test_value;
     uint16_t lfsr;
     uint8_t burst_buffout[BURST_TEST_LENGTH];
     uint8_t burst_buffin[BURST_TEST_LENGTH];
-    int i;
+    const char *spi_path = NULL;
+    int i,opt;
 
+    while ((opt = getopt(argc, argv, ":s:") != -1)) {
+        switch (opt) {
+            case 's':
+                spi_path = optarg;
+                break;
+            case ':':
+                fprintf(stderr, "-s parameter requires path\n");
+                return 1;
+            default:
+                fprintf(stderr, "Usage: %s [-s <spi_dev_path>]\n", argv[0]);
+                return 1;
+            }
+    }
+
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
+    }
+
+    printf("INFO: Using SPI device: %s\n", spi_path);
     printf("Beginning of test for loragw_reg.c\n");
 
-    lgw_connect(false, 129E3);
+    lgw_connect(false, 129E3, spi_path);
     /* 2 SPI transactions:
     -> 0x80 0x00        <- 0x00 0x00        forcing page 0
     -> 0x01 0x00        <- 0x00 0x64        checking version

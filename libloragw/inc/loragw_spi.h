@@ -49,10 +49,11 @@ Maintainer: Sylvain Miermont
 /**
 @brief LoRa concentrator SPI setup (configure I/O and peripherals)
 @param spi_target_ptr pointer on a generic pointer to SPI target (implementation dependant)
+@param dev_path Path to the SPI device
 @return status of register operation (LGW_SPI_SUCCESS/LGW_SPI_ERROR)
 */
 
-int lgw_spi_open(void **spi_target_ptr);
+int lgw_spi_open(void **spi_target_ptr, const char* dev_path);
 
 /**
 @brief LoRa concentrator SPI close

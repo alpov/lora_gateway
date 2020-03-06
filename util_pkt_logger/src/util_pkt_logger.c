@@ -399,9 +399,10 @@ int main(int argc, char **argv)
     struct timespec fetch_time;
     char fetch_timestamp[30];
     struct tm * x;
+    const char *spi_path = NULL;
 
     /* parse command line options */
-    while ((i = getopt (argc, argv, "hr:")) != -1) {
+    while ((i = getopt (argc, argv, "hr:s:")) != -1) {
         switch (i) {
             case 'h':
                 usage();
@@ -415,12 +416,18 @@ int main(int argc, char **argv)
                     return EXIT_FAILURE;
                 }
                 break;
-
+            case 's':
+                spi_path = optarg;
+                break;
             default:
                 MSG("ERROR: argument parsing use -h option for help\n");
                 usage();
                 return EXIT_FAILURE;
         }
+    }
+
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
     }
 
     /* configure signal handling */
@@ -457,8 +464,9 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    MSG("INFO: Using SPI device: %s\n", spi_path);
     /* starting the concentrator */
-    i = lgw_start();
+    i = lgw_start(spi_path);
     if (i == LGW_HAL_SUCCESS) {
         MSG("INFO: concentrator started, packet can now be received\n");
     } else {

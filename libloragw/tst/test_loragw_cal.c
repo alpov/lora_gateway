@@ -106,6 +106,7 @@ void usage(void) {
     printf( " -n <uint> Number of calibration iterations\n");
     printf( " -k <int> Concentrator clock source (0:radio_A, 1:radio_B(default))\n");
     printf( " -t <int> Radio to run TX calibration on (0:None(default), 1:radio_A, 2:radio_B, 3:both)\n");
+    printf( " -s <string> SPI Device path)\n");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -131,6 +132,7 @@ int main(int argc, char **argv)
     uint8_t img_rej_a_min;
     uint8_t img_rej_b_max;
     uint8_t img_rej_b_min;
+    const char *spi_path = NULL;
     //FILE *file;
 
     /* command line options */
@@ -143,7 +145,7 @@ int main(int argc, char **argv)
     int nb_cal = 5;
 
     /* parse command line options */
-    while ((i = getopt (argc, argv, "ha:b:r:n:k:t:")) != -1) {
+    while ((i = getopt (argc, argv, "ha:b:r:n:k:t:s:")) != -1) {
         switch (i) {
             case 'h':
                 usage();
@@ -190,11 +192,18 @@ int main(int argc, char **argv)
                 sscanf(optarg, "%i", &xi);
                 tx_enable = (uint8_t)xi;
                 break;
+            case 's':
+                spi_path = optarg;
+                break;
             default:
                 printf("ERROR: argument parsing\n");
                 usage();
                 return -1;
         }
+    }
+
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
     }
 
     /* check input parameters */
@@ -262,8 +271,9 @@ int main(int argc, char **argv)
     printf("Radio B frequency: %f MHz\n",fb/1e6);
     printf("Number of calibration iterations: %d\n",nb_cal);
     printf("Calibration command: brd: %d, chip: %d, dac: %d\n\n", cal_cmd >> 6, 1257-2*((cal_cmd & 0x20) >> 5), 2+((cal_cmd & 0x10) >> 4));
+    printf("INFO: Using SPI device: %s\n", spi_path);
 
-    x = lgw_connect(false, DEFAULT_TX_NOTCH_FREQ);
+    x = lgw_connect(false, DEFAULT_TX_NOTCH_FREQ, spi_path);
     if (x == -1) {
         printf("ERROR: FAIL TO CONNECT BOARD\n");
         return -1;

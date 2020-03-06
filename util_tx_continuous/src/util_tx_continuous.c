@@ -95,6 +95,7 @@ int main(int argc, char **argv)
         {"fdev", 1, 0, 0},
         {"bt", 1, 0, 0},
         {"notch", 1, 0, 0},
+        {"spi-path", 1, 0, 0},
         {0, 0, 0, 0}
     };
     unsigned int arg_u;
@@ -123,7 +124,7 @@ int main(int argc, char **argv)
     struct lgw_conf_rxrf_s rfconf;
     struct lgw_tx_gain_lut_s txlut;
     struct lgw_pkt_tx_s txpkt;
-
+    const char *spi_path = NULL;
 
     /* Parse command line options */
     while ((i = getopt_long (argc, argv, "hud::f:r:", long_options, &option_index)) != -1) {
@@ -146,6 +147,7 @@ int main(int argc, char **argv)
                 printf(" --br    <float>  FSK bitrate in kbps, [0.5:250]\n");
                 printf(" --fdev  <uint>   FSK frequency deviation in kHz, [1:250]\n");
                 printf(" --bt    <uint>   FSK gaussian filter BT trim, [0:3]\n");
+                printf(" --spi-path <char>   SPI device path\n");
                 printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                 return EXIT_SUCCESS;
                 break;
@@ -191,6 +193,9 @@ int main(int argc, char **argv)
                     else {
                         g_pa = arg_u;
                     }
+                }
+                else if (strcmp(long_options[option_index].name,"spi-path") == 0) {
+                    spi_path = optarg;
                 }
                 else if (strcmp(long_options[option_index].name,"mod") == 0) {
                     i = sscanf(optarg, "%s", arg_s);
@@ -300,6 +305,10 @@ int main(int argc, char **argv)
         }
     }
 
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
+    }
+
     /* Configure signal handling */
     sigemptyset( &sigact.sa_mask );
     sigact.sa_flags = 0;
@@ -335,7 +344,7 @@ int main(int argc, char **argv)
     lgw_txgain_setconf(&txlut);
 
     /* Start the concentrator */
-    i = lgw_start();
+    i = lgw_start(spi_path);
     if (i == LGW_HAL_SUCCESS) {
         MSG("INFO: concentrator started, packet can be sent\n");
     } else {

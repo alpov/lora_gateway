@@ -104,15 +104,18 @@ int main(int argc, char **argv)
     int32_t test_addr;
     uint8_t test_buff[BUFF_SIZE];
     uint8_t read_buff[BUFF_SIZE];
+    const char *spi_path = NULL;
 
     /* parse command line options */
-    while ((i = getopt (argc, argv, "ht:")) != -1) {
+    while ((i = getopt (argc, argv, "ht:s:")) != -1) {
         switch (i) {
             case 'h':
                 usage();
                 return EXIT_FAILURE;
                 break;
-
+            case 's':
+                spi_path = optarg;
+                break;
             case 't':
                 i = sscanf(optarg, "%i", &xi);
                 if ((i != 1) || (xi < 1) || (xi > 4)) {
@@ -129,6 +132,11 @@ int main(int argc, char **argv)
                 return EXIT_FAILURE;
         }
     }
+
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
+    }
+
     MSG("INFO: Starting LoRa concentrator SPI stress-test number %i\n", test_number);
 
     /* configure signal handling */
@@ -140,7 +148,7 @@ int main(int argc, char **argv)
     sigaction(SIGTERM, &sigact, NULL);
 
     /* start SPI link */
-    i = lgw_connect(false, DEFAULT_TX_NOTCH_FREQ);
+    i = lgw_connect(false, DEFAULT_TX_NOTCH_FREQ, spi_path);
     if (i != LGW_REG_SUCCESS) {
         MSG("ERROR: lgw_connect() did not return SUCCESS");
         return EXIT_FAILURE;

@@ -102,9 +102,10 @@ int main( int argc, char ** argv )
     uint16_t rssi_histo;
     uint16_t rssi_cumu;
     float rssi_thresh[] = {0.1,0.3,0.5,0.8,1};
+    const char *spi_path = NULL;
 
     /* Parse command line options */
-    while((i = getopt(argc, argv, "hf:n:b:l:o:")) != -1) {
+    while((i = getopt(argc, argv, "hf:n:b:l:o:s:")) != -1) {
         switch (i) {
         case 'h':
             printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -114,6 +115,7 @@ int main( int argc, char ** argv )
             printf(" -n <uint>  Total number of RSSI points [1..65535]\n");
             printf(" -o <int>   Offset in dB to be applied to the SX127x RSSI [-128..127]\n");
             printf(" -l <char>  Log file name\n");
+            printf(" -s <char>  SPI device path\n");
             printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
             return EXIT_SUCCESS;
 
@@ -183,7 +185,9 @@ int main( int argc, char ** argv )
                 rssi_offset = (int8_t)arg_i;
             }
             break;
-
+        case 's':
+            spi_path = optarg;
+            break;
         case 'l': /* -l <char>  Log file name */
             j = sscanf(optarg, "%s", arg_s);
             if (j != 1) {
@@ -203,7 +207,11 @@ int main( int argc, char ** argv )
     /* Start message */
     printf("+++ Start spectral scan of LoRa gateway channels +++\n");
 
-    x = lgw_connect(true, 0); /* SPI only, no FPGA reset/configure (for now) */
+    if (!spi_path) {
+        spi_path = "/dev/spi0";
+    }
+
+    x = lgw_connect(true, 0, spi_path); /* SPI only, no FPGA reset/configure (for now) */
     if(x != 0) {
         printf("ERROR: Failed to connect to FPGA\n");
         return EXIT_FAILURE;
@@ -264,7 +272,7 @@ int main( int argc, char ** argv )
             printf("ERROR: Failed to disconnect from FPGA\n");
             return EXIT_FAILURE;
         }
-        x = lgw_connect(false, LGW_DEFAULT_NOTCH_FREQ); /* FPGA reset/configure */
+        x = lgw_connect(false, LGW_DEFAULT_NOTCH_FREQ, spi_path); /* FPGA reset/configure */
         if(x != 0) {
             printf("ERROR: Failed to connect to FPGA\n");
             return EXIT_FAILURE;
