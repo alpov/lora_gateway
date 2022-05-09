@@ -227,6 +227,8 @@ int main(int argc, char **argv)
 
     boardconf.lorawan_public = true;
     boardconf.clksrc = clocksource;
+    boardconf.modem_invert_iq = true;
+    boardconf.only_crc_en = true;
     lgw_board_setconf(boardconf);
 
     /* RF config */

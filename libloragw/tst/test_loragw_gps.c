@@ -192,6 +192,8 @@ int main(int argc, char *argv[])
     memset(&boardconf, 0, sizeof(boardconf));
     boardconf.lorawan_public = true;
     boardconf.clksrc = 1;
+    boardconf.modem_invert_iq = true;
+    boardconf.only_crc_en = true;
     lgw_board_setconf(boardconf);
 
     /* RF config */

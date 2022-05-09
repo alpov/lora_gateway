@@ -135,6 +135,8 @@ static uint64_t fsk_sync_word= 0xC194C1; /* default FSK sync word (ALIGNED RIGHT
 
 static bool lorawan_public = false;
 static uint8_t rf_clkout = 0;
+static bool modem_invert_iq = true;
+static bool only_crc_en = true;
 
 static struct lgw_tx_gain_lut_s txgain_lut = {
     .size = 2,
@@ -230,7 +232,7 @@ void lgw_constant_adjust(void) {
 
     /* I/Q path setup */
     // lgw_reg_w(LGW_RX_INVERT_IQ,0); /* default 0 */
-    // lgw_reg_w(LGW_MODEM_INVERT_IQ,1); /* default 1 */
+    lgw_reg_w(LGW_MODEM_INVERT_IQ, modem_invert_iq ? 1 : 0); /* default 1 */
     // lgw_reg_w(LGW_CHIRP_INVERT_RX,1); /* default 1 */
     // lgw_reg_w(LGW_RX_EDGE_SELECT,0); /* default 0 */
     // lgw_reg_w(LGW_MBWSSF_MODEM_INVERT_IQ,0); /* default 0 */
@@ -279,7 +281,7 @@ void lgw_constant_adjust(void) {
     }
 
     // lgw_reg_w(LGW_PREAMBLE_FINE_TIMING_GAIN,1); /* default 1 */
-    // lgw_reg_w(LGW_ONLY_CRC_EN,1); /* default 1 */
+    lgw_reg_w(LGW_ONLY_CRC_EN, only_crc_en ? 1 : 0); /* default 1 */
     // lgw_reg_w(LGW_PAYLOAD_FINE_TIMING_GAIN,2); /* default 2 */
     // lgw_reg_w(LGW_TRACKING_INTEGRAL,0); /* default 0 */
     // lgw_reg_w(LGW_ADJUST_MODEM_START_OFFSET_RDX8,0); /* default 0 */
@@ -423,8 +425,10 @@ int lgw_board_setconf(struct lgw_conf_board_s conf) {
     /* set internal config according to parameters */
     lorawan_public = conf.lorawan_public;
     rf_clkout = conf.clksrc;
+    modem_invert_iq = conf.modem_invert_iq;
+    only_crc_en = conf.only_crc_en;
 
-    DEBUG_PRINTF("Note: board configuration; lorawan_public:%d, clksrc:%d\n", lorawan_public, rf_clkout);
+    DEBUG_PRINTF("Note: board configuration; lorawan_public:%d, clksrc:%d, modem_invert_iq:%d, only_crc_en:%d\n", lorawan_public, rf_clkout, modem_invert_iq, only_crc_en);
 
     return LGW_HAL_SUCCESS;
 }
