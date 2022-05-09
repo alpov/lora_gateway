@@ -227,6 +227,10 @@ struct lgw_conf_rxif_s {
     uint32_t    datarate;       /*!> RX datarate, 0 for default */
     uint8_t     sync_word_size; /*!> size of FSK sync word (number of bytes, 0 for default) */
     uint64_t    sync_word;      /*!> FSK sync word (ALIGN RIGHT, eg. 0xC194C1) */
+    bool        implicit_header;            /*!> MBWSSF implicit header mode */
+    bool        implicit_crc_en;            /*!> MBWSSF implicit CRC enabled */
+    uint8_t     implicit_coding_rate;       /*!> MBWSSF implicit coding rate */
+    uint8_t     implicit_payload_length;    /*!> MBWSSF implicit payload length */
 };
 
 /**

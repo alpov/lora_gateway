@@ -271,6 +271,20 @@ int parse_SX1301_configuration(const char * conf_file) {
                 case 12: ifconf.datarate = DR_LORA_SF12; break;
                 default: ifconf.datarate = DR_UNDEFINED;
             }
+            val = json_object_dotget_value(conf, "chan_Lora_std.implicit_header");
+            if (json_value_get_type(val) == JSONBoolean) {
+                ifconf.implicit_header = (bool)json_value_get_boolean(val);
+            } else {
+                ifconf.implicit_header = false;
+            }
+            val = json_object_dotget_value(conf, "chan_Lora_std.implicit_crc_en");
+            if (json_value_get_type(val) == JSONBoolean) {
+                ifconf.implicit_crc_en = (bool)json_value_get_boolean(val);
+            } else {
+                ifconf.implicit_crc_en = false;
+            }
+            ifconf.implicit_coding_rate = (uint32_t)json_object_dotget_number(conf, "chan_Lora_std.implicit_coding_rate");
+            ifconf.implicit_payload_length = (uint32_t)json_object_dotget_number(conf, "chan_Lora_std.implicit_payload_length");
             MSG("INFO: LoRa standard channel enabled, radio %i selected, IF %i Hz, %u Hz bandwidth, SF %u\n", ifconf.rf_chain, ifconf.freq_hz, bw, sf);
         }
         if (lgw_rxif_setconf(8, ifconf) != LGW_HAL_SUCCESS) {

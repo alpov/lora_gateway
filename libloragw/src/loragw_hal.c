@@ -127,6 +127,10 @@ static uint8_t lora_multi_sfmask[LGW_MULTI_NB]; /* enables SF for LoRa 'multi' m
 static uint8_t lora_rx_bw; /* bandwidth setting for LoRa standalone modem */
 static uint8_t lora_rx_sf; /* spreading factor setting for LoRa standalone modem */
 static bool lora_rx_ppm_offset;
+static bool lora_rx_implicit_header;
+static bool lora_rx_implicit_crc_en;
+static uint8_t lora_rx_implicit_codig_rate;
+static uint8_t lora_rx_implicit_payload_length;
 
 static uint8_t fsk_rx_bw; /* bandwidth setting of FSK modem */
 static uint32_t fsk_rx_dr; /* FSK modem datarate in bauds */
@@ -581,6 +585,10 @@ int lgw_rxif_setconf(uint8_t if_chain, struct lgw_conf_rxif_s conf) {
             } else {
                 lora_rx_ppm_offset = false;
             }
+            lora_rx_implicit_header = conf.implicit_header;
+            lora_rx_implicit_crc_en = conf.implicit_crc_en;
+            lora_rx_implicit_codig_rate = conf.implicit_coding_rate;
+            lora_rx_implicit_payload_length = conf.implicit_payload_length;
 
             DEBUG_PRINTF("Note: LoRa 'std' if_chain %d configuration; en:%d freq:%d bw:%d dr:%d\n", if_chain, if_enable[if_chain], if_freq[if_chain], lora_rx_bw, lora_rx_sf);
             break;
@@ -958,6 +966,10 @@ int lgw_start(const char *spi_dev_path) {
                 return LGW_HAL_ERROR;
         }
         lgw_reg_w(LGW_MBWSSF_PPM_OFFSET, lora_rx_ppm_offset); /* default 0 */
+        lgw_reg_w(LGW_MBWSSF_IMPLICIT_HEADER, lora_rx_implicit_header ? 1 : 0);
+        lgw_reg_w(LGW_MBWSSF_IMPLICIT_CRC_EN, lora_rx_implicit_crc_en ? 1 : 0);
+        lgw_reg_w(LGW_MBWSSF_IMPLICIT_CODING_RATE, lora_rx_implicit_codig_rate);
+        lgw_reg_w(LGW_MBWSSF_IMPLICIT_PAYLOAD_LENGHT, lora_rx_implicit_payload_length);
         lgw_reg_w(LGW_MBWSSF_MODEM_ENABLE, 1); /* default 0 */
     } else {
         lgw_reg_w(LGW_MBWSSF_MODEM_ENABLE, 0);
